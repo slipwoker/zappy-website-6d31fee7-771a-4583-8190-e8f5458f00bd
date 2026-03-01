@@ -1,0 +1,47 @@
+# Business — Generative Engine Optimization Map
+
+---
+
+## Pages
+
+### בית
+https://example.com
+טבליות קדם אימון מתמוססות שפועלות תוך דקות! שכחו מאבקות מבולגנות והמתנה ארוכה. NITROFLOW מספק אנרגיה מיידית לאימונים בבית ובחדר כושר.
+
+### איך זה עובד
+https://example.com/how-it-works
+טכנולוגיית המסה מהירה מספקת אנרגיה מיידית לאימון. למדו כיצד NITROFLOW מחליף אבקות מסורתיות בפתרון נוח, מהיר ונייד שמתאים לכל סוג אימון.
+
+### מדע ותקנים
+https://example.com/science
+נוסחה מבוססת מחקר עם תקני בטיחות ואיכות גבוהים ביותר. גלו את המדע מאחורי תוסף הקדם אימון המתקדם לנשים וגברים שמספק תוצאות אמיתיות.
+
+### צור קשר
+https://example.com/contact
+צוות המומחים שלנו זמין לייעוץ אישי, שאלות והזמנות. צרו קשר עכשיו וגלו איך NITROFLOW יכול לשדרג את האימונים שלכם עם אנרגיה מיידית ונוחות מקסימלית.
+
+## Legal & Policy
+
+### Privacy Policy
+https://example.com/privacy
+Information about how user data is collected, stored, and protected.
+
+### Terms & Conditions
+https://example.com/terms
+Legal terms describing service usage, rights, and policies.
+
+### Accessibility Statement
+https://example.com/accessibility
+Information about WCAG compliance and accessibility features.
+
+---
+
+# Business Context (for LLM understanding)
+
+## About Business
+---
+
+# Additional Resources
+
+- **Sitemap**: https://example.com/sitemap.xml
+- **Robots.txt**: https://example.com/robots.txt

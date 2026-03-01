@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="index, follow">
+    <title>גלו איך הטבליות פועלות תוך דקות — NITROFLOW</title>
+    <meta name="description" content="טכנולוגיית המסה מהירה מספקת אנרגיה מיידית לאימון. למדו כיצד NITROFLOW מחליף אבקות מסורתיות בפתרון נוח, מהיר ונייד שמתאים לכל סוג אימון.">
+    <meta name="keywords" content="איך עובד קדם אימון, טבליות מתמוססות, NITROFLOW, אנרגיה מיידית לאימון, קדם אימון מהיר">
+    
+    <!-- Favicons -->
+    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="/assets/favicon-48x48.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/assets/favicon-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/assets/favicon-512x512.png">
+    <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+    <!-- Zappy Analytics -->
+<script>
+(function() {
+  'use strict';
+  
+  // Configuration
+  var config = {
+    websiteId: '6d31fee7-771a-4583-8190-e8f5458f00bd',
+    apiUrl: 'https://api.zappy5.com/api/analytics/track',
+    sessionDuration: 30 * 60 * 1000, // 30 minutes
+    visitorDuration: 30 * 24 * 60 * 60 * 1000, // 30 days
+    trackPageViews: true,
+    trackClicks: true,
+    trackFormSubmissions: true
+  };
+  
+  // Generate or retrieve persistent visitor ID (30 days)
+  function getVisitorId() {
+    var visitorKey = 'zappy_visitor_' + config.websiteId;
+    var visitor = null;
+    
+    try {
+      visitor = localStorage.getItem(visitorKey);
+      if (visitor) {
+        var visitorData = JSON.parse(visitor);
+        var now = Date.now();
+        
+        // Check if visitor ID is still valid (30 days)
+        if (now - visitorData.created < config.visitorDuration) {
+          // Update last seen timestamp
+          visitorData.lastSeen = now;
+          localStorage.setItem(visitorKey, JSON.stringify(visitorData));
+          return visitorData.id;
+        }
+      }
+    } catch (e) {
+      console.warn('Zappy Analytics: LocalStorage not available');
+    }
+    
+    // Generate new visitor ID
+    var newVisitorId = 'zv_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    
+    try {
+      localStorage.setItem(visitorKey, JSON.stringify({
+        id: newVisitorId,
+        created: Date.now(),
+        lastSeen: Date.now()
+      }));
+    } catch (e) {
+      // Continue without local storage
+    }
+    
+    return newVisitorId;
+  }
+  
+  // Generate or retrieve session ID (30 minutes)
+  function getSessionId() {
+    var sessionKey = 'zappy_session_' + config.websiteId;
+    var session = null;
+    
+    try {
+      session = sessionStorage.getItem(sessionKey);
+      if (session) {
+        var sessionData = JSON.parse(session);
+        var now = Date.now();
+        
+        // Check if session is still valid
+        if (now - sessionData.timestamp < config.sessionDuration) {
+          // Update timestamp
+          sessionData.timestamp = now;
+          sessionStorage.setItem(sessionKey, JSON.stringify(sessionData));
+          return sessionData.id;
+        }
+      }
+    } catch (e) {
+      console.warn('Zappy Analytics: SessionStorage not available');
+    }
+    
+    // Generate new session ID
+    var newSessionId = 'zs_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    
+    try {
+      sessionStorage.setItem(sessionKey, JSON.stringify({
+        id: newSessionId,
+        timestamp: Date.now()
+      }));
+    } catch (e) {
+      // Continue without session storage
+    }
+    
+    return newSessionId;
+  }
+  
+  var visitorId = getVisitorId();
+  var sessionId = getSessionId();
+  
+  // Track an event
+  function trackEvent(eventType, data) {
+    data = data || {};
+    
+    var eventData = {
+      website_id: config.websiteId,
+      event_type: eventType,
+      page_path: window.location.pathname,
+      referrer: document.referrer || 'direct',
+      visitor_id: visitorId,
+      session_id: sessionId,
+      metadata: data
+    };
+    
+    // Use sendBeacon if available (better for page unload events)
+    if (navigator.sendBeacon) {
+      var blob = new Blob([JSON.stringify(eventData)], { type: 'application/json' });
+      navigator.sendBeacon(config.apiUrl, blob);
+    } else {
+      // Fallback to fetch
+      fetch(config.apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(eventData),
+        keepalive: true
+      }).catch(function(error) {
+        console.warn('Zappy Analytics: Failed to track event', error);
+      });
+    }
+  }
+  
+  // Track page view
+  if (config.trackPageViews) {
+    trackEvent('pageview', {
+      title: document.title,
+      url: window.location.href
+    });
+  }
+  
+  // Track clicks on important elements
+  if (config.trackClicks) {
+    document.addEventListener('click', function(e) {
+      var target = e.target;
+      
+      // Track button clicks (counted as actions)
+      if (target.tagName === 'BUTTON' || target.closest('button')) {
+        var button = target.tagName === 'BUTTON' ? target : target.closest('button');
+        trackEvent('click', {
+          element: 'button',
+          text: button.textContent.trim().substring(0, 100),
+          id: button.id || null,
+          class: button.className || null
+        });
+      }
+      
+      // Track link clicks (navigation - not counted as actions)
+      else if (target.tagName === 'A' || target.closest('a')) {
+        var link = target.tagName === 'A' ? target : target.closest('a');
+        trackEvent('navigation', {
+          element: 'link',
+          text: link.textContent.trim().substring(0, 100),
+          href: link.href,
+          external: link.hostname !== window.location.hostname
+        });
+      }
+    }, true);
+  }
+  
+  // Track form submissions
+  if (config.trackFormSubmissions) {
+    document.addEventListener('submit', function(e) {
+      var form = e.target;
+      
+      trackEvent('form_submit', {
+        form_id: form.id || null,
+        form_name: form.name || null,
+        form_action: form.action || null,
+        form_method: form.method || 'GET'
+      });
+    }, true);
+  }
+  
+  // Track time on page (send on page unload)
+  var pageLoadTime = Date.now();
+  
+  window.addEventListener('beforeunload', function() {
+    var timeOnPage = Math.floor((Date.now() - pageLoadTime) / 1000); // in seconds
+    
+    trackEvent('page_unload', {
+      time_on_page: timeOnPage,
+      page_path: window.location.pathname
+    });
+  });
+  
+  // Expose tracking function globally for custom events
+  window.zappyAnalytics = {
+    track: trackEvent,
+    getVisitorId: function() { return visitorId; },
+    getSessionId: function() { return sessionId; }
+  };
+  
+})();
+</script>
+<!-- End Zappy Analytics -->
+    <meta property="og:title" content="גלו איך הטבליות פועלות תוך דקות — NITROFLOW">
+  <meta property="og:description" content="טכנולוגיית המסה מהירה מספקת אנרגיה מיידית לאימון. למדו כיצד NITROFLOW מחליף אבקות מסורתיות בפתרון נוח, מהיר ונייד שמתאים לכל סוג אימון.">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="he_IL">
+  
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="גלו איך הטבליות פועלות תוך דקות — NITROFLOW">
+  <meta name="twitter:description" content="טכנולוגיית המסה מהירה מספקת אנרגיה מיידית לאימון. למדו כיצד NITROFLOW מחליף אבקות מסורתיות בפתרון נוח, מהיר ונייד שמתאים לכל סוג אימון.">
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Favicons -->
+    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="/assets/favicon-48x48.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/assets/favicon-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/assets/favicon-512x512.png">
+    <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+    <!-- Cookie Consent -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vanilla-cookieconsent@3/dist/cookieconsent.css" />
+    <script src="https://cdn.jsdelivr.net/npm/vanilla-cookieconsent@3/dist/cookieconsent.umd.js"></script>
+    <!-- Mickidum Accessibility Toolbar -->
+    <script src="https://cdn.jsdelivr.net/gh/mickidum/acc_toolbar/acctoolbar/acctoolbar.min.js"></script>
+    <link rel="stylesheet" href="/styles.css">
+
+    <style id="zappy-dropdown-submenu-styles">
+      /* ========== DESKTOP DROPDOWN SUBMENU STYLES ========== */
+      /* Base styles for dropdown submenus - parent must be positioned */
+      .nav-menu li:has(.sub-menu), nav li:has(.sub-menu), .navbar li:has(.sub-menu), #navMenu li:has(.sub-menu) { position: relative; }
+      /* Submenu base - hidden by default */
+      .nav-menu .sub-menu, nav .sub-menu, .navbar .sub-menu, #navMenu .sub-menu { display: block !important; position: absolute !important; top: 100%; left: 0; min-width: 220px; background: white; border-radius: 8px; box-shadow: 0 8px 25px rgba(0,0,0,0.15); padding: 8px 0; opacity: 0; visibility: hidden; transform: translateY(10px); transition: all 0.3s ease; z-index: 1000; list-style: none; pointer-events: none; }
+      /* CRITICAL: Desktop hover styles to show dropdown */
+      .nav-menu li:hover > .sub-menu, nav li:hover > .sub-menu, .navbar li:hover > .sub-menu, #navMenu li:hover > .sub-menu { opacity: 1 !important; visibility: visible !important; transform: translateY(0) !important; pointer-events: auto !important; }
+      /* Submenu item styling */
+      .sub-menu li { list-style: none; margin: 0; padding: 0; }
+      .sub-menu a { display: block !important; padding: 10px 16px !important; color: #333 !important; font-weight: 500; text-decoration: none; white-space: nowrap; transition: background-color 0.2s; }
+      .sub-menu a:hover { background-color: #f5f5f5; }
+      /* RTL (Hebrew/Arabic) dropdown positioning */
+      [dir="rtl"] .nav-menu .sub-menu, [dir="rtl"] nav .sub-menu, [dir="rtl"] .navbar .sub-menu, html[lang="he"] .nav-menu .sub-menu, html[lang="he"] nav .sub-menu, html[lang="he"] .navbar .sub-menu, html[lang="ar"] .nav-menu .sub-menu, html[lang="ar"] nav .sub-menu, html[lang="ar"] .navbar .sub-menu { left: auto !important; right: 0 !important; }
+      /* Hide empty dropdown menus */
+      .sub-menu:empty, .sub-menu:not(:has(li:not(.zappy-hidden-menu-item))), .sub-menu:not(:has(li)) { display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }
+      /* Desktop: show submenu on Menu Group hover */
+      li:has(.menu-group-title):hover > .sub-menu { opacity: 1 !important; visibility: visible !important; transform: translateY(0) !important; pointer-events: auto !important; }
+      /* Menu Group title styling */
+      .nav-menu > li > .menu-group-title, #navMenu > li > .menu-group-title { display: inline-block; padding: 0.5rem 1rem; cursor: default; user-select: none; }
+      
+      /* ========== MOBILE SUBMENU STYLES ========== */
+      @media (max-width: 768px) {
+        .nav-menu .sub-menu, nav .sub-menu, .navbar .sub-menu, #navMenu .sub-menu { position: static !important; transform: none !important; box-shadow: none !important; background: transparent !important; max-height: 0; overflow: hidden; opacity: 0; visibility: hidden; transition: max-height 0.3s ease, opacity 0.3s ease; padding: 0 !important; border-radius: 0 !important; }
+        .sub-menu.mobile-expanded { max-height: 500px !important; opacity: 1 !important; visibility: visible !important; padding: 8px 0 8px 16px !important; }
+        [dir="rtl"] .sub-menu.mobile-expanded, html[lang="he"] .sub-menu.mobile-expanded { padding: 8px 16px 8px 0 !important; }
+        /* Disable hover behavior on mobile */
+        .nav-menu li:hover > .sub-menu, nav li:hover > .sub-menu, .navbar li:hover > .sub-menu, #navMenu li:hover > .sub-menu { opacity: 0; visibility: hidden; pointer-events: none; }
+        .nav-menu li > .sub-menu.mobile-expanded, nav li > .sub-menu.mobile-expanded, .navbar li > .sub-menu.mobile-expanded, #navMenu li > .sub-menu.mobile-expanded { opacity: 1 !important; visibility: visible !important; pointer-events: auto !important; }
+        .nav-menu li:has(.sub-menu), nav li:has(.sub-menu), .navbar li:has(.sub-menu), #navMenu li:has(.sub-menu) { display: flex !important; flex-wrap: wrap !important; align-items: center !important; position: relative !important; min-height: 44px !important; }
+        .nav-menu li:has(.sub-menu) > a, nav li:has(.sub-menu) > a, .navbar li:has(.sub-menu) > a, #navMenu li:has(.sub-menu) > a { flex: 1 !important; min-width: 0 !important; }
+        .nav-menu li:has(.sub-menu) > .menu-group-title, nav li:has(.sub-menu) > .menu-group-title, .navbar li:has(.sub-menu) > .menu-group-title, #navMenu li:has(.sub-menu) > .menu-group-title { flex: 1 !important; min-width: 0 !important; padding: 0 !important; line-height: inherit !important; }
+        .nav-menu li:has(.sub-menu) > .sub-menu, nav li:has(.sub-menu) > .sub-menu, .navbar li:has(.sub-menu) > .sub-menu, #navMenu li:has(.sub-menu) > .sub-menu { flex-basis: 100% !important; width: 100% !important; }
+        .nav-menu li:has(.sub-menu) > a [class*="chevron"], .nav-menu li:has(.sub-menu) > a [class*="arrow"], .nav-menu li:has(.sub-menu) > a .fa-chevron-down, .nav-menu li:has(.sub-menu) > a .fa-angle-down, nav li:has(.sub-menu) > a [class*="chevron"], nav li:has(.sub-menu) > a [class*="arrow"], #navMenu li:has(.sub-menu) > a [class*="chevron"], #navMenu li:has(.sub-menu) > a [class*="arrow"] { display: none !important; visibility: hidden !important; }
+        .mobile-submenu-toggle { display: flex !important; align-items: center !important; justify-content: center !important; width: 44px !important; height: auto !important; background: transparent !important; border: none !important; cursor: pointer !important; color: var(--text-dark) !important; position: static !important; flex-shrink: 0 !important; align-self: stretch !important; z-index: 2 !important; padding: 0 !important; margin: 0 !important; }
+        .mobile-submenu-toggle::after { content: '' !important; width: 0 !important; height: 0 !important; border-left: 6px solid transparent !important; border-right: 6px solid transparent !important; border-top: 7px solid currentColor !important; transition: transform 0.3s ease !important; }
+        .mobile-submenu-toggle.expanded::after { transform: rotate(180deg) !important; }
+        .sub-menu a { padding: 10px 0 !important; display: block !important; color: var(--text-dark) !important; }
+        .navbar .sub-menu li a, nav.navbar .sub-menu li a, .zappy-products-dropdown .sub-menu a { color: var(--text-dark) !important; }
+      }
+      @media (min-width: 769px) { .mobile-submenu-toggle { display: none !important; } }
+    </style>
+
+    <style id="zappy-widget-visibility">
+      #mic-access-tool-general-button, .mic-access-tool-general-button,
+      #mic-init-access-tool .mic-access-tool-general-button, #mic-init-access-tool #mic-access-tool-general-button,
+      ._access-icon, #mic-access-tool-box, .mic-access-tool-box,
+      #mic-init-access-tool #mic-access-tool-box, div[id*="mic-access-tool-box"], ._access-menu {
+        display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important;
+      }
+    </style>
+</head>
+<body>
+
+  <nav class="navbar" dir="rtl">
+  <button class="mobile-toggle" id="mobileToggle" aria-label="Menu">
+    <svg class="hamburger-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <path d="M3 12h18M3 6h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+    </svg>
+    <svg class="close-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" style="display:none;">
+      <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+    </svg>
+  </button>
+  
+  <button class="phone-header-btn" aria-label="Call">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+    </svg>
+  </button>
+  
+  <div class="nav-container">
+    <div class="nav-brand">
+      <a href="/" class="logo-link">
+        <img src="/assets/business-logo.webp" alt="NITROFLOW" class="logo" />
+      </a>
+    </div>
+    
+    <ul class="nav-menu" id="navMenu"><li><a href="/how-it-works">איך זה עובד</a></li><li><a href="/science">מדע ותקנים</a></li></ul>
+    
+    <div class="nav-cta-container">
+      <a href="/contact" class="nav-cta-btn">צור קשר</a>
+    </div>
+  </div>
+</nav>
+  
+  <main>
+    <section class="how-it-works-page-intro-section" data-layout-spec="איך זה עובד-page-intro">
+  <div class="how-it-works-page-intro-container">
+    <div class="how-it-works-page-intro-content">
+      <div class="how-it-works-page-intro-text">
+        <h1>איך NITROFLOW עובד.</h1>
+        <p>הטבליות המתמוססות של NITROFLOW נספגות ישירות לזרם הדם תוך דקות ספורות. בלי אבקות מבולגנות, בלי המתנה של 30 דקה – רק אנרגיה מיידית ומיקוד חד בדיוק כשאתה צריך. כל טבליה מכילה נוסחה מדויקת של קפאין, אמינו חומצות ואלקטרוליטים, מותאמת לספורטאים רציניים שמבינים שכל דקה נחשבת. הטכנולוגיה המתקדמת שלנו מבטיחה ספיגה מקסימלית ללא פשרות על איכות או ביצועים.</p>
+        <a href="/contact" class="how-it-works-page-intro-cta btn-primary">שאל שאלה</a>
+      </div>
+      <div class="how-it-works-page-intro-media">
+        <img data-placeholder="how-it-works-page-intro-image-1" data-context="Macro close-up photography of effervescent bubbles rising from a NITROFLOW dissolvable tablet on a matte black surface. Extreme detail showing CO2 microbubbles in crystal-clear water, with dramatic side lighting creating cyan and pink rim highlights on the bubbles. The tablet should be partially dissolved, with visible fizzing action and energy particles. Shot with shallow depth of field, cinematic black background, high-contrast studio lighting emphasizing the speed and science of dissolution. Professional product photography for premium fitness supplement brand." data-element-type="image" width="600" height="400" src="/assets/site-how-it-works-page-intro-image-1.webp" alt="טבליית NITROFLOW מתמוססת במים עם בועות מיקרו">
+      </div>
+    </div>
+  </div>
+  <div class="how-it-works-page-intro-divider-wrapper">
+    <svg data-no-icon-edit="true" aria-hidden="true" viewBox="0 0 1200 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <filter id="bubble-glow">
+          <feGaussianBlur stdDeviation="2" result="blur"></feGaussianBlur>
+          <feComposite in="SourceGraphic" in2="blur" operator="over"></feComposite>
+        </filter>
+      </defs>
+      <path d="M0,100 L0,50 Q100,45 200,52 T400,48 Q500,52 600,45 T800,50 Q900,48 1000,52 T1200,48 L1200,100 Z" fill="var(--bg-light)"></path>
+      <circle cx="150" cy="52" r="4" fill="rgba(62,224,230,0.6)" filter="url(#bubble-glow)"></circle>
+      <circle cx="180" cy="48" r="3" fill="rgba(62,224,230,0.5)" filter="url(#bubble-glow)"></circle>
+      <circle cx="420" cy="50" r="5" fill="rgba(62,224,230,0.7)" filter="url(#bubble-glow)"></circle>
+      <circle cx="650" cy="47" r="3.5" fill="rgba(62,224,230,0.55)" filter="url(#bubble-glow)"></circle>
+      <circle cx="880" cy="51" r="4.5" fill="rgba(62,224,230,0.65)" filter="url(#bubble-glow)"></circle>
+      <circle cx="1050" cy="49" r="3" fill="rgba(62,224,230,0.5)" filter="url(#bubble-glow)"></circle>
+    </svg>
+  </div>
+</section>
+
+<section class="how-it-works-process-section" data-layout-spec="איך זה עובד-process">
+  <div class="how-it-works-process-container">
+    <h2 class="how-it-works-process-title">3 שלבים. אפס בלאגן.</h2>
+    
+    <div class="how-it-works-process-steps">
+      <div class="how-it-works-process-step">
+        <h3 class="how-it-works-process-step-number">01</h3>
+        <p class="how-it-works-process-step-text">הכניסו את הטבליה למים (או לפי ההוראות על התווית). פשוט, מהיר, ללא מיקסר או כוסות מדידה.</p>
+      </div>
+      
+      <svg class="how-it-works-process-connector" data-no-icon-edit="true" aria-hidden="true" viewBox="0 0 120 2" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <line x1="0" y1="1" x2="120" y2="1" stroke="currentColor" stroke-width="1" stroke-dasharray="4 4"></line>
+      </svg>
+      
+      <div class="how-it-works-process-step">
+        <h3 class="how-it-works-process-step-number">02</h3>
+        <p class="how-it-works-process-step-text">המתינו להמסה מהירה. הטכנולוגיה המתקדמת שלנו מבטיחה פירוק מלא תוך דקות ספורות.</p>
+      </div>
+      
+      <svg class="how-it-works-process-connector" data-no-icon-edit="true" aria-hidden="true" viewBox="0 0 120 2" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <line x1="0" y1="1" x2="120" y2="1" stroke="currentColor" stroke-width="1" stroke-dasharray="4 4"></line>
+      </svg>
+      
+      <div class="how-it-works-process-step">
+        <h3 class="how-it-works-process-step-number">03</h3>
+        <p class="how-it-works-process-step-text">התחילו להתאמן מיד. אנרגיה מקסימלית, פוקוס חד, ביצועים ללא פשרות – בדיוק כשאתם צריכים.</p>
+      </div>
+    </div>
+    
+    <p class="how-it-works-process-note">תמיד פעלו לפי ההוראות על התווית.</p>
+  </div>
+  
+  <div class="how-it-works-process-divider-wrapper">
+    <svg data-no-icon-edit="true" aria-hidden="true" viewBox="0 0 1200 80" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0,80 L1200,0 L1200,80 Z" fill="var(--bg-light)"></path>
+    </svg>
+  </div>
+</section>
+
+<section class="how-it-works-ingredients-section" data-layout-spec="איך זה עובד-ingredients">
+  <div class="how-it-works-ingredients-container">
+    <div class="how-it-works-ingredients-content">
+      <h2 class="how-it-works-ingredients-title">הפורמולה, פשוט.</h2>
+      <p class="how-it-works-ingredients-intro">שקיפות מוחלטת. ביצועים מדויקים. כל טבליה מכילה מינונים מדוייקים של מרכיבים פעילים שנבחרו בקפידה – ללא חומרי מילוי, ללא סוכר, רק מה שהגוף שלך צריך כדי לפעול ברמה הגבוהה ביותר.</p>
+      
+      <div class="how-it-works-ingredients-grid">
+        <div class="how-it-works-ingredients-item">
+          <h3 class="how-it-works-ingredients-item-title">תמיכה באנרגיה</h3>
+          <p class="how-it-works-ingredients-item-text">קפאין אנהידרוס וגינסנג לדחיפה מיידית ומתמשכת – מתחילה לפעול תוך 3–5 דקות ושומרת אותך פוקוס עד סוף האימון.</p>
+        </div>
+        
+        <div class="how-it-works-ingredients-item">
+          <h3 class="how-it-works-ingredients-item-title">תמיכה בפוקוס</h3>
+          <p class="how-it-works-ingredients-item-text">L-Theanine ו-Alpha-GPC משפרים בהירות מנטלית ותגובתיות – הקשר בין המוח לשריר נשאר חד ומדויק.</p>
+        </div>
+        
+        <div class="how-it-works-ingredients-item">
+          <h3 class="how-it-works-ingredients-item-title">תמיכה בסיבולת</h3>
+          <p class="how-it-works-ingredients-item-text">Beta-Alanine ו-Citrulline Malate מעכבים עייפות שרירית ומגבירים זרימת דם – יותר חזרות, יותר אינטנסיביות, פחות כאב.</p>
+        </div>
+        
+        <div class="how-it-works-ingredients-item">
+          <h3 class="how-it-works-ingredients-item-title">תמיכה בהידרציה</h3>
+          <p class="how-it-works-ingredients-item-text">אלקטרוליטים מאוזנים (מגנזיום, אשלגן, נתרן) מבטיחים ספיגה מהירה ושמירה על איזון נוזלים במהלך מאמץ גבוה.</p>
+        </div>
+        
+        <div class="how-it-works-ingredients-item">
+          <h3 class="how-it-works-ingredients-item-title">תמיכה בפאמפ</h3>
+          <p class="how-it-works-ingredients-item-text">L-Arginine מרחיב כלי דם ומגביר אספקת חמצן לשרירים – תחושת מלאות ווסקולריות משופרת בכל סט.</p>
+        </div>
+        
+        <div class="how-it-works-ingredients-item">
+          <h3 class="how-it-works-ingredients-item-title">מערכת טעם והמסה</h3>
+          <p class="how-it-works-ingredients-item-text">טכנולוגיה קניינית של מיקרו-גרגירים מבטיחה המסה מיידית ללא שקיעה – טעם נקי, חווית שתייה חלקה, אפס בזבוז.</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="how-it-works-ingredients-image-wrapper">
+      <div class="how-it-works-ingredients-image-tile">
+        <img data-placeholder="how-it-works-ingredients-image-1" data-context="Studio product shot of NITROFLOW dissolvable pre-workout tablets and sleek black tube/case on a matte-black gym surface with subtle cyan accent lighting. Professional photography with sharp focus on the product, dark moody background, high-end fitness supplement aesthetic. The tablets should be visible (either scattered or stacked), showing their compact form. Minimal composition emphasizing premium quality and scientific precision." width="600" height="700" src="/assets/site-how-it-works-ingredients-image-1.webp" alt="טבליות NITROFLOW וצינור אחסון על משטח שחור מט">
+      </div>
+    </div>
+  </div>
+  
+  <div class="how-it-works-ingredients-divider-wrapper">
+    <svg data-no-icon-edit="true" aria-hidden="true" viewBox="0 0 1200 60" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="how-it-works-ingredients-cyan-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" style="stop-color:#3EE0E6;stop-"></stop>
+          <stop offset="15%" style="stop-color:#3EE0E6;stop-opacity:1"></stop>
+          <stop offset="40%" style="stop-color:#3EE0E6;stop-opacity:0.4"></stop>
+          <stop offset="42%" style="stop-color:#3EE0E6;stop-"></stop>
+          <stop offset="58%" style="stop-color:#3EE0E6;stop-"></stop>
+          <stop offset="60%" style="stop-color:#3EE0E6;stop-opacity:0.4"></stop>
+          <stop offset="85%" style="stop-color:#3EE0E6;stop-opacity:1"></stop>
+          <stop offset="100%" style="stop-color:#3EE0E6;stop-"></stop>
+        </linearGradient>
+      </defs>
+      <rect x="0" y="28" width="1200" height="2" fill="url(#how-it-works-ingredients-cyan-gradient)"></rect>
+      <rect x="180" y="32" width="60" height="1" fill="#3EE0E6" opacity="0.6"></rect>
+      <rect x="250" y="34" width="40" height="1" fill="#3EE0E6" opacity="0.4"></rect>
+      <rect x="300" y="31" width="50" height="1" fill="#3EE0E6" opacity="0.5"></rect>
+      <rect x="720" y="33" width="45" height="1" fill="#3EE0E6" opacity="0.5"></rect>
+      <rect x="780" y="31" width="55" height="1" fill="#3EE0E6" opacity="0.6"></rect>
+      <rect x="850" y="35" width="35" height="1" fill="#3EE0E6" opacity="0.4"></rect>
+      <rect x="920" y="32" width="48" height="1" fill="#3EE0E6" opacity="0.5"></rect>
+    </svg>
+  </div>
+</section>
+
+<section class="how-it-works-faq-section" data-layout-spec="איך זה עובד-faq">
+  <div class="faq-container">
+    <div class="faq-header">
+      <h2>שאלות נפוצות.</h2>
+      <p>מצאת שאלה? אנחנו כאן כדי לעזור לך להבין איך NITROFLOW עובד ומה הופך אותו לשונה מכל תוסף אימון אחר.</p>
+    </div>
+
+    <div class="faq-list">
+      <div class="faq-item">
+        <h3>כמה זמן לפני האימון אני צריך לקחת את הטבליה?</h3>
+        <p>NITROFLOW פועל תוך 3-5 דקות מרגע הנטילה. אנחנו ממליצים לקחת טבליה אחת כ-5 דקות לפני האימון כדי לאפשר למרכיבים הפעילים להיספג במלואם. בניגוד לאבקות מסורתיות שדורשות 30 דקות המתנה, הטכנולוגיה המתקדמת שלנו מבטיחה אנרגיה מיידית ללא עיכובים.</p>
+      </div>
+
+      <div class="faq-item">
+        <h3>איך זה טועם?</h3>
+        <p>הטבליות המתמוססות שלנו מגיעות בטעם לימון-ליים רענן עם מגע של תפוח ירוק. הן מתמוססות במהירות על הלשון וממלאות את הפה בתחושת אנרגיה מבעבעת. הטעם נקי, לא מתוק מדי, ולא משאיר תחושה דביקה או כבדה בפה – בדיוק כמו שאתה צריך לפני אימון אינטנסיבי.</p>
+      </div>
+
+      <div class="faq-item">
+        <h3>האם זה נוח לנשיאה ולאחסון?</h3>
+        <p>בהחלט. NITROFLOW מגיע באריזות קומפקטיות שמתאימות לכל תיק אימון, כיס מכנסיים או תרמיל. אין צורך במיכלים גדולים, שייקרים או כפיות מדידה. כל טבליה ארוזה בנפרד, מוגנת מלחות, ומוכנה לשימוש בכל מקום – בבית, בחדר הכושר, בפארק או בנסיעה. זה המוצר המושלם לספורטאים שתמיד בתנועה.</p>
+      </div>
+
+      <div class="faq-item">
+        <h3>למי זה מתאים?</h3>
+        <p>NITROFLOW תוכנן עבור ספורטאים רציניים וחובבי כושר ביתי שמחפשים אנרגיה מיידית, נוחות מקסימלית ותוצאות מוכחות. אם אתה עייף מאבקות מסורתיות שלוקח להן זמן לפעול, ממשקאות כבדים שממלאים את הבטן, או מתוספי אימון שדורשים ציוד והכנה – NITROFLOW הוא הפתרון שלך. מתאים לגברים ונשים מגיל 18 ומעלה.</p>
+      </div>
+
+      <div class="faq-item">
+        <h3>איך זה משתווה לאבקות פרה-וורקאוט מסורתיות?</h3>
+        <p>NITROFLOW מנצח בכל פרמטר: זמן פעולה (3-5 דקות לעומת 30 דקות), נוחות (טבליה קטנה לעומת כוס גדולה עם מים), ניקיון (אין שאריות, אין כתמים, אין ניקוי), ניידות (אריזה קומפקטית לעומת מיכל ענק), ודיוק (מנה מדויקת בכל פעם). זה לא רק תחליף לאבקה – זה שדרוג מלא לחוויית ה-pre-workout שלך.</p>
+      </div>
+
+      <div class="faq-item">
+        <h3>האם יש התוויות נגד או אזהרות בטיחות?</h3>
+        <p>NITROFLOW הוא תוסף תזונה איכותי, אך כמו עם כל מוצר המכיל קפאין ומרכיבים אקטיביים, מומלץ להתייעץ עם רופא או תזונאי לפני השימוש – במיוחד אם את/ה בהריון, מניק/ה, סובל/ת ממצב רפואי קיים או נוטל/ת תרופות. אין להשתמש במוצר אם יש רגישות לקפאין או לאחד המרכיבים. אין להעביר את המינון המומלץ.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="faq-divider-wrapper">
+    <svg data-no-icon-edit="true" aria-hidden="true" viewBox="0 0 1200 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="faq-gradient-fade" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style="stop-color:var(--bg-light);stop-opacity:1"></stop>
+          <stop offset="100%" style="stop-color:var(--bg-dark);stop-opacity:1"></stop>
+        </linearGradient>
+      </defs>
+      <rect x="0" y="0" width="1200" height="100" fill="url(#faq-gradient-fade)"></rect>
+    </svg>
+  </div>
+</section>
+
+<section class="how-it-works-cta-section" data-layout-spec="איך זה עובד-cta">
+  <div class="how-it-works-cta-container">
+    <h2 class="how-it-works-cta-title">קבל את כל הפרטים במהירות.</h2>
+    <p class="how-it-works-cta-text">יש לך שאלות על השימוש, שיתופי פעולה או זמינות המוצר? אנחנו כאן כדי לספק לך תשובות מהירות ומדויקות. צור קשר עם NITROFLOW עכשיו וגלה איך אנחנו יכולים לקחת את האימונים שלך לרמה הבאה.</p>
+    <div class="how-it-works-cta-buttons">
+      <a href="/contact" class="how-it-works-cta-btn how-it-works-cta-btn-primary">צור קשר עם NITROFLOW</a>
+      <a href="/" class="how-it-works-cta-btn how-it-works-cta-btn-secondary">חזרה לדף הבית</a>
+    </div>
+  </div>
+</section>
+  </main>
+  
+  <footer class="site-footer">
+  <div class="footer-container">
+    <div class="footer-top">
+      <div class="footer-column footer-about">
+        <img src="/assets/business-logo.webp" alt="NITROFLOW" class="logo" />
+        <p class="footer-description">תוספי תזונה מתקדמים לספורטאים ולאנשי כושר. איכות ללא פשרות.</p>
+      </div>
+      
+      <div class="footer-column footer-links">
+        <h3 class="footer-heading">קישורים מהירים</h3>
+        <ul class="footer-nav">
+          <li><a href="/how-it-works">איך זה עובד</a></li>
+          <li><a href="/science">מדע ותקנים</a></li>
+          <li><a href="/contact">צור קשר</a></li>
+        </ul>
+      </div>
+      
+      <div class="footer-column footer-contact">
+        <h3 class="footer-heading">יצירת קשר</h3>
+        <ul class="contact-list">
+          <li>
+            <i class="fas fa-envelope"></i>
+            <a href="mailto:[business_email]">[business_email]</a>
+          </li>
+          <li>
+            <i class="fas fa-phone"></i>
+            <a href="tel:[business_phone]">[business_phone]</a>
+          </li>
+          <li><a href="/"><i class="fas fa-map-marker-alt"></i>
+            <span>[business_address]</span></a></li>
+        </ul>
+      </div>
+      
+      <div class="footer-column footer-social">
+        <h3 class="footer-heading">עקבו אחרינו</h3>
+        <div class="social-links">
+          <a href="[facebook_handle]" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+          <a href="[instagram_handle]" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+          <a href="[whatsapp_handle]" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="footer-bottom">
+      <div class="footer-bottom-content">
+        <p class="copyright">© 2026 NITROFLOW. All rights reserved.</p>
+        <div class="footer-legal">
+          <a href="/privacy">Privacy Policy</a>
+          <span class="separator">|</span>
+          <a href="/terms">Terms &amp; Conditions</a>
+          <span class="separator">|</span>
+          <a href="/accessibility">Accessibility</a>
+          <span class="separator">|</span>
+          <a href="https://zappy5.com" target="_blank" class="zappy-attribution">Generated by Zappy</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+  
+  <a href="https://wa.me/[whatsapp_handle]" class="whatsapp-float" aria-label="WhatsApp">
+    <i class="fab fa-whatsapp"></i>
+  </a>
+  
+  <div data-integration="accessibility:toolbar"></div>
+
+    <script src="/script.js"></script>
+
+    <script id="zappy-mobile-submenu-script">
+    (function() {
+      function initMobileSubmenuToggles() {
+        if (window.innerWidth > 768) {
+          document.querySelectorAll('.mobile-submenu-toggle').forEach(function(btn) { btn.remove(); });
+          document.querySelectorAll('.sub-menu.mobile-expanded').forEach(function(menu) { menu.classList.remove('mobile-expanded'); });
+          return;
+        }
+        var items = document.querySelectorAll('.nav-menu li:has(.sub-menu), nav li:has(.sub-menu), .navbar li:has(.sub-menu), #navMenu li:has(.sub-menu)');
+        items.forEach(function(li) {
+          if (li.querySelector('.mobile-submenu-toggle')) return;
+          var submenu = li.querySelector('.sub-menu');
+          var parentLink = li.querySelector(':scope > a');
+          if (!submenu || !parentLink) return;
+          var toggleBtn = document.createElement('button');
+          toggleBtn.className = 'mobile-submenu-toggle';
+          toggleBtn.setAttribute('aria-label', 'Toggle submenu');
+          toggleBtn.setAttribute('type', 'button');
+          parentLink.insertAdjacentElement('afterend', toggleBtn);
+          toggleBtn.addEventListener('click', function(e) {
+            e.preventDefault(); e.stopPropagation();
+            document.querySelectorAll('.sub-menu.mobile-expanded').forEach(function(menu) {
+              if (menu !== submenu) { menu.classList.remove('mobile-expanded'); var t = menu.parentElement.querySelector('.mobile-submenu-toggle'); if(t) t.classList.remove('expanded'); }
+            });
+            submenu.classList.toggle('mobile-expanded');
+            toggleBtn.classList.toggle('expanded');
+          });
+        });
+      }
+      if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initMobileSubmenuToggles); }
+      else { initMobileSubmenuToggles(); }
+      var resizeTimer; window.addEventListener('resize', function() { clearTimeout(resizeTimer); resizeTimer = setTimeout(initMobileSubmenuToggles, 250); });
+      // Re-initialize when mobile menu becomes visible (MutationObserver)
+      var observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+          if (mutation.type === 'attributes') {
+            var target = mutation.target;
+            if (target.classList && (target.classList.contains('active') || target.classList.contains('open'))) {
+              setTimeout(initMobileSubmenuToggles, 100);
+            }
+          }
+        });
+      });
+      setTimeout(function() {
+        document.querySelectorAll('.mobile-menu, .nav-menu, #navMenu, nav').forEach(function(menu) {
+          observer.observe(menu, { attributes: true, attributeFilter: ['class', 'style'] });
+        });
+      }, 500);
+    })();
+    </script>
+
+    <script id="zappy-navbar-scroll-effect">
+    (function(){var nb=document.querySelector('nav.navbar,.navbar:not(.zappy-catalog-menu)');var cm=document.querySelector('.zappy-catalog-menu');if(!nb)return;var fb='rgba(14,16,20,0.85)';var th=60;nb.style.transition='background 0.3s ease,backdrop-filter 0.3s ease,-webkit-backdrop-filter 0.3s ease,box-shadow 0.3s ease';if(cm)cm.style.transition='background 0.3s ease,backdrop-filter 0.3s ease,-webkit-backdrop-filter 0.3s ease';function onS(){var y=window.scrollY||window.pageYOffset;if(y>th){nb.style.background=fb;nb.style.backdropFilter='blur(12px)';nb.style.webkitBackdropFilter='blur(12px)';nb.style.boxShadow='0 2px 16px rgba(0,0,0,0.12)';if(cm){cm.style.background=fb;cm.style.backdropFilter='blur(12px)';cm.style.webkitBackdropFilter='blur(12px)';}}else{nb.style.background='transparent';nb.style.backdropFilter='none';nb.style.webkitBackdropFilter='none';nb.style.boxShadow='none';if(cm){cm.style.background='transparent';cm.style.backdropFilter='none';cm.style.webkitBackdropFilter='none';}}}window.addEventListener('scroll',onS,{passive:true});onS();})();
+    </script>
+</body>
+</html>
